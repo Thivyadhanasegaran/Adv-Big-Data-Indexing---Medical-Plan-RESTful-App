@@ -13,10 +13,13 @@ export const createPlan = async (req, res) => {
 
     if (!valid) {
         console.error('Validation errors:', validate.errors);
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        .header('Pragma', 'no-cache')
+        .header('X-Content-Type-Options', 'nosniff');
         return res.status(400).json({
             message: 'Missing or invalid fields in request body',
             statusCode: 400,
-            errors: validate.errors,
         });
     }
 
@@ -52,10 +55,7 @@ export const getPlan = async (req, res) => {
         // Retrieve the plan from Redis
         const plan = await redisConnection.get(planId);
 
-        if (!plan) {
-            return res.status(404).json({ message: 'Plan not found' });
-        }
-
+       
         if (!plan) {
             return res.status(404).json({              
                 message: `Plan with ID: ${planId} does not exist`, 

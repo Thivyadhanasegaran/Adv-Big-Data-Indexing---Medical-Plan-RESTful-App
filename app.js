@@ -11,7 +11,7 @@ app.use(express.json());
 
 // Routes
 app.use('/', healthRoute);
-app.use('/plan', planRoutes);
+app.use('/v1/plan', planRoutes);
 
 
 // Start the server
