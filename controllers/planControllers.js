@@ -109,14 +109,130 @@ export const getAllPlans = async (req, res) => {
     }
   };
 
+
+// Update a plan by ID (PATCH)
+export const updatePlan = async (req, res) => {
+    const planId = req.params.id;
+    const updateData = req.body;
+
+    // Optionally validate updateData here
+    const valid = validate(updateData);
+    if (!valid) {
+        return res.status(400).json({
+            message: 'Invalid fields in update request',
+            errors: validate.errors,
+        });
+    }
+
+    try {
+        const existingPlan = await redisConnection.get(planId);
+        if (!existingPlan) {
+            return res.status(404).json({ message: `Plan with ID: ${planId} does not exist`, status: 404 });
+        }
+
+        const existingPlanData = JSON.parse(existingPlan);
+        const etagRes = etagCreater(JSON.stringify(existingPlanData));
+
+        // Check if the request has an 'If-Match' header and if the ETag matches
+        const ifMatchHeader = req.get('If-Match');
+        if (ifMatchHeader && ifMatchHeader !== etagRes) {
+            // If the ETag does not match, respond with 412 Precondition Failed
+            return res.status(412).json({
+                message: 'Precondition Failed: ETag does not match',
+                status: 412
+            });
+        }
+
+        // Update the plan data
+        const updatedPlanData = { ...existingPlanData, ...updateData };
+
+        // Save the updated plan back to Redis
+        await redisConnection.set(planId, JSON.stringify(updatedPlanData));
+
+        // Create a new ETag for the updated plan
+        const newEtagRes = etagCreater(JSON.stringify(updatedPlanData));
+        res.set('Etag', newEtagRes);
+        return res.status(200).json({ message: `Plan with ID: ${planId} updated successfully`, updatedPlanData });
+    } catch (error) {
+        console.error('Error updating plan:', error);
+        return res.status(500).json({ message: 'Error updating plan', error: error.message });
+    }
+};
+
+// Replace a plan by ID (PUT)
+export const putPlan = async (req, res) => {
+    const planId = req.params.id;
+    const newPlanData = req.body;
+
+    // Optionally validate newPlanData here
+    const valid = validate(newPlanData);
+    if (!valid) {
+        return res.status(400).json({
+            message: 'Invalid fields in replace request',
+            errors: validate.errors,
+        });
+    }
+
+    try {
+        const existingPlan = await redisConnection.get(planId);
+        if (!existingPlan) {
+            return res.status(404).json({ message: `Plan with ID: ${planId} does not exist`, status: 404 });
+        }
+
+        const existingPlanData = JSON.parse(existingPlan);
+        const etagRes = etagCreater(JSON.stringify(existingPlanData));
+
+        // Check if the request has an 'If-Match' header and if the ETag matches
+        const ifMatchHeader = req.get('If-Match');
+        if (ifMatchHeader && ifMatchHeader !== etagRes) {
+            // If the ETag does not match, respond with 412 Precondition Failed
+            return res.status(412).json({
+                message: 'Precondition Failed: ETag does not match',
+                status: 412
+            });
+        }
+
+        // Replace the plan data
+        await redisConnection.set(planId, JSON.stringify(newPlanData));
+
+        // Create a new ETag for the replaced plan
+        const newEtagRes = etagCreater(JSON.stringify(newPlanData));
+        res.set('Etag', newEtagRes);
+        return res.status(200).json({ message: `Plan with ID: ${planId} replaced successfully`, newPlanData });
+    } catch (error) {
+        console.error('Error replacing plan:', error);
+        return res.status(500).json({ message: 'Error replacing plan', error: error.message });
+    }
+};
+
+
 // Delete a plan by ID
 export const deletePlan = async (req, res) => {
     try {
         const planId = req.params.id;
         console.log(`Attempting to delete plan with ID: ${planId}`);
 
+        // Retrieve the existing plan to get its current ETag
+        const existingPlan = await redisConnection.get(planId);
+        if (!existingPlan) {
+            return res.status(404).json({ message: 'Plan not found' });
+        }
+
+        const existingPlanData = JSON.parse(existingPlan);
+        const etagRes = etagCreater(JSON.stringify(existingPlanData));
+
+        // Check if the request has an 'If-Match' header and if the ETag matches
+        const ifMatchHeader = req.get('If-Match');
+        if (ifMatchHeader && ifMatchHeader !== etagRes) {
+            // If the ETag does not match, respond with 412 Precondition Failed
+            return res.status(412).json({
+                message: 'Precondition Failed: ETag does not match',
+                status: 412
+            });
+        }
+
         // Delete the plan from Redis
-        const result = await redisConnection.del(planId); 
+        const result = await redisConnection.del(planId);
         console.log(`Deletion result for plan ID ${planId}:`, result);
 
         // Check if the result indicates the plan was found and deleted

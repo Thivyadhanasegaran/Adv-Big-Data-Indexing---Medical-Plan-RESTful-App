@@ -7,7 +7,6 @@
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,6 +14,7 @@
   "dependencies": {
     "ajv": "^8.17.1",
     "express": "^4.21.0",
+    "google-auth-library": "^9.14.2",
     "redis": "^4.7.0"
   }
 }
