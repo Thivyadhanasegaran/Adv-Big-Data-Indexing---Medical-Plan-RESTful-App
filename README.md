@@ -200,6 +200,3 @@ The generated access token will expire in 1 hour (3600 seconds). Token expiry is
 ### Screenshot
 
 ![Screenshot of Feature](images/postman1.png)
-### Screenshot
-
-![Screenshot of Feature](images/postman2.png)
