@@ -1,10 +1,10 @@
 {
-  "name": "demo-1",
+  "name": "Adv-Big-Data-Indexing",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node app.js",
+    "start": "node --no-deprecation app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +15,7 @@
     "ajv": "^8.17.1",
     "express": "^4.21.0",
     "google-auth-library": "^9.14.2",
+    "punycode": "^2.3.1",
     "redis": "^4.7.0"
   }
 }

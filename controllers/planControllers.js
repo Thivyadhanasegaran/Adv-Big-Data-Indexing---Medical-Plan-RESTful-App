@@ -24,22 +24,22 @@ export const createPlan = async (req, res) => {
     }
 
     try {
-        const planId = req.body.objectId;
+        const objectId = req.body.objectId;
 
         // Save the entire plan to Redis as a JSON string
-        await redisConnection.set(planId, JSON.stringify(req.body), (err, reply) => {
+        await redisConnection.set(objectId, JSON.stringify(req.body), (err, reply) => {
             if (err) {
                 console.error('Error saving plan:', err);
                 return res.status(500).send();
             }
         });
 
-        const response = await redisConnection.get(planId);
+        const response = await redisConnection.get(objectId);
         res.set('Etag', etagCreater(JSON.stringify(response))); 
         res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
         .header('Pragma', 'no-cache')
         .header('X-Content-Type-Options', 'nosniff');
-        return res.status(201).json({ message: `Plan with ID: ${planId} created successfully`, planId, statusCode: 201 });
+        return res.status(201).json({ message: `Plan with ID: ${objectId} created successfully`, objectId, statusCode: 201 });
 
     } catch (error) {
         console.error('Error:', error);
@@ -142,9 +142,39 @@ export const updatePlan = async (req, res) => {
                 status: 412
             });
         }
+        const mergeData = (oldResponse, newData) => {
+            // Create a copy of oldResponse to avoid mutating the original
+            const mergedResponse = { ...oldResponse };
+        
+            for (let [key, value] of Object.entries(newData)) {
+                if (Array.isArray(value)) {
+                    // Handle merging for array properties
+                    const oldArray = mergedResponse[key] || [];
+                    for (let i = 0; i < value.length; i++) {
+                        const newItem = value[i];
+                        const oldData = oldArray.find(item => item.objectId === newItem.objectId);
+                        
+                        if (!oldData) {
+                            // If the new item does not exist in the old array, add it
+                            oldArray.push(newItem);
+                        } else {
+                            // Update the existing item with the new data
+                            Object.assign(oldData, newItem);
+                        }
+                    }
+                    // Update the merged response array
+                    mergedResponse[key] = oldArray;
+                } else {
+                    // For non-array properties, directly update the merged response
+                    mergedResponse[key] = value;
+                }
+            }
+            return mergedResponse; // Return the merged response
+        };
 
         // Update the plan data
-        const updatedPlanData = { ...existingPlanData, ...updateData };
+       // const updatedPlanData = { ...existingPlanData, ...updateData };
+       const updatedPlanData = mergeData(existingPlanData, updateData);
 
         // Save the updated plan back to Redis
         await redisConnection.set(planId, JSON.stringify(updatedPlanData));
