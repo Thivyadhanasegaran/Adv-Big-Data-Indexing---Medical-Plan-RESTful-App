@@ -51,7 +51,6 @@ const schema = {
       planType: { type: 'string' },
       creationDate: { type: 'string' },
     },
-    required: [ 'planCostShares', 'linkedPlanServices', '_org', 'objectId', 'objectType', 'planType', 'creationDate'],
   };
   
   export default schema;

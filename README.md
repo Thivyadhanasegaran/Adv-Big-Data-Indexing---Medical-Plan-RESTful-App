@@ -30,6 +30,7 @@ Status Code:
 304 Not Modified if the data has not changed and the ETag matches
 412 Precondition Failed if the ETag does not match
 401 Unauthorized access
+409 Conflict Plan with ID already exists
 
 Headers:
 Content-Type: application/json 
@@ -55,6 +56,7 @@ Example Request Body
 Response:
 Status Code: 201 Created
 Status Code: 401 Unauthorized If the request lacks valid authentication credentials.
+Status Code: 409 Conflict - Plan with ID already exists
 Body: A JSON object confirming the creation.
 Headers: ETag header containing a unique hash of the created object for conditional reads.
 
@@ -141,14 +143,14 @@ Status Code: 401 Unauthorized If the request lacks valid authentication
 Content-Type: application/json
 
 Indicates that the request body contains JSON data.
+
 If-None-Match:
-
 Used for conditional reads with ETags. This header allows the client to specify an ETag value. If the value matches the current ETag of the resource, the server responds with 304 Not Modified, indicating that the resource has not changed.
+
 ETag:
-
 Included in responses to represent the version of the data. Clients can use this value in subsequent requests with the If-Match or If-None-Match headers to ensure they are working with the most recent version of the data.
-If-Match:
 
+If-Match:
 Used for conditional updates and deletes. This header allows the client to specify an ETag value for the resource. If the ETag matches the current version of the resource, the server processes the update or delete; if not, a 412 Precondition Failed status is returned to prevent unintended modifications.
 
 # OAuth 2.0 Implementation:

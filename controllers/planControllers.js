@@ -1,11 +1,13 @@
 import Ajv from 'ajv';
 import { redisConnection } from '../middlewares/redisConnection.js'; 
 import planSchema from '../models/planSchema.js'; 
+import planSchemaPatch from '../models/planSchemaPatch.js'; 
 import { etagCreater } from '../middlewares/etagCreater.js';  
 
 
 const ajv = new Ajv();
 const validate = ajv.compile(planSchema);
+const validatePatch = ajv.compile(planSchemaPatch);
 
 // Create a new plan
 export const createPlan = async (req, res) => {
@@ -22,24 +24,49 @@ export const createPlan = async (req, res) => {
             statusCode: 400,
         });
     }
+    const objectId = req.body.objectId;
 
     try {
-        const objectId = req.body.objectId;
+        // Check if the plan with the given objectId already exists
+        const existingPlan = await redisConnection.get(objectId);
+        if (existingPlan) {
+            // If the object already exists, respond with 409 Conflict
+            return res.status(409).json({
+                message: `Conflict: Plan with ID ${objectId} already exists.`,
+                statusCode: 409,
+            });
+        }
 
         // Save the entire plan to Redis as a JSON string
-        await redisConnection.set(objectId, JSON.stringify(req.body), (err, reply) => {
-            if (err) {
-                console.error('Error saving plan:', err);
-                return res.status(500).send();
-            }
-        });
+        await redisConnection.set(objectId, JSON.stringify(req.body));
 
         const response = await redisConnection.get(objectId);
         res.set('Etag', etagCreater(JSON.stringify(response))); 
         res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
-        .header('Pragma', 'no-cache')
-        .header('X-Content-Type-Options', 'nosniff');
-        return res.status(201).json({ message: `Plan with ID: ${objectId} created successfully`, objectId, statusCode: 201 });
+            .header('Pragma', 'no-cache')
+            .header('X-Content-Type-Options', 'nosniff');
+        return res.status(201).json({
+            message: `Plan with ID: ${objectId} created successfully`,
+            objectId,
+            statusCode: 201,
+        });
+    // try {
+    //     const objectId = req.body.objectId;
+
+    //     // Save the entire plan to Redis as a JSON string
+    //     await redisConnection.set(objectId, JSON.stringify(req.body), (err, reply) => {
+    //         if (err) {
+    //             console.error('Error saving plan:', err);
+    //             return res.status(500).send();
+    //         }
+    //     });
+
+    //     const response = await redisConnection.get(objectId);
+    //     res.set('Etag', etagCreater(JSON.stringify(response))); 
+    //     res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
+    //     .header('Pragma', 'no-cache')
+    //     .header('X-Content-Type-Options', 'nosniff');
+    //     return res.status(201).json({ message: `Plan with ID: ${objectId} created successfully`, objectId, statusCode: 201 });
 
     } catch (error) {
         console.error('Error:', error);
@@ -80,6 +107,16 @@ export const getPlan = async (req, res) => {
            
         }
 
+        // Check for 'If-Match' header
+        const ifMatchHeader = req.get('If-Match');
+        if (ifMatchHeader && ifMatchHeader !== etagRes) {
+            // If the ETag does not match, respond with 412 Precondition Failed
+            return res.status(412).json({
+                message: 'Precondition Failed: ETag does not match',
+                status: 412
+            });
+        }
+
         res.set('Etag', etagRes);
         return res.status(200).json(planData);
     } catch (error) {
@@ -116,7 +153,7 @@ export const updatePlan = async (req, res) => {
     const updateData = req.body;
 
     // Optionally validate updateData here
-    const valid = validate(updateData);
+    const valid = validatePatch(updateData);
     if (!valid) {
         return res.status(400).json({
             message: 'Invalid fields in update request',
@@ -142,6 +179,15 @@ export const updatePlan = async (req, res) => {
                 status: 412
             });
         }
+
+        // Check 'If-None-Match' header to avoid updating if the resource hasn't changed
+        const ifNoneMatchHeader = req.get('If-None-Match');
+        if (ifNoneMatchHeader && ifNoneMatchHeader === etagRes) {
+            // If the ETag matches, respond with 304 Not Modified
+            return res.status(304).send();
+        }
+
+
         const mergeData = (oldResponse, newData) => {
             // Create a copy of oldResponse to avoid mutating the original
             const mergedResponse = { ...oldResponse };
@@ -212,6 +258,8 @@ export const putPlan = async (req, res) => {
         const existingPlanData = JSON.parse(existingPlan);
         const etagRes = etagCreater(JSON.stringify(existingPlanData));
 
+
+
         // Check if the request has an 'If-Match' header and if the ETag matches
         const ifMatchHeader = req.get('If-Match');
         if (ifMatchHeader && ifMatchHeader !== etagRes) {
@@ -220,6 +268,13 @@ export const putPlan = async (req, res) => {
                 message: 'Precondition Failed: ETag does not match',
                 status: 412
             });
+        }
+
+        // Check 'If-None-Match' header to prevent updating if no changes were made
+        const ifNoneMatchHeader = req.get('If-None-Match');
+        if (ifNoneMatchHeader && ifNoneMatchHeader === etagRes) {
+            // If the ETag matches, respond with 304 Not Modified
+            return res.status(304).send();
         }
 
         // Replace the plan data
