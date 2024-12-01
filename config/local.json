@@ -1,0 +1,7 @@
+{
+    "RABBITMQ_QUEUE_NAME": "PUBSUB",
+    "RABBITMQ_EXCHANGE_TYPE": "direct",
+    "RABBITMQ_EXCHANGE_NAME": "demo",
+    "RABBITMQ_KEY": "demo3",
+    "ELASTICSEARCH_INDEX_NAME": "planindex"
+}
