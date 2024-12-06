@@ -1,38 +1,33 @@
 import express from 'express';
-import planRoutes from './routes/planRoutes.js';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
 import healthRoute from './routes/healthRoute.js';
-import { elasticServiceConnection, client } from './services/elasticServiceConnection.js';
-import receiver from './pubsub/receiver.js';
+import { elasticServiceConnection } from './services/elasticServiceConnection.js';
 
 const app = express();
 
-// Middleware to parse JSON body
+app.set('views', path.join(process.cwd(), 'views'));
+app.set('view engine', 'ejs');
+
+app.use(logger('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Routes
 app.use('/', healthRoute);
-app.use('/v1/plan', planRoutes);
 
-// Start the server and initialize services
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, async () => {
+
+app.listen(PORT, async function () {
   try {
-    // Initialize Elasticsearch connection
-    const elasticResponse = await elasticServiceConnection();
-    if (elasticResponse.status === 200) {
-      console.log('Elasticsearch is connected.');
-    } else {
-      console.error('Failed to connect to Elasticsearch.');
-    }
-
-    // Start RabbitMQ consumer for queuing operations
-    receiver();
-    console.log('RabbitMQ consumer is running.');
-
+    await elasticServiceConnection();
     console.log(`Server is running on port ${PORT}`);
+
   } catch (err) {
-    console.error('Error during server initialization:', err);
+    console.error(err);
   }
 });
 

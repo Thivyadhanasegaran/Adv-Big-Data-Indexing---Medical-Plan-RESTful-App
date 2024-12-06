@@ -40,7 +40,7 @@ const schema = {
             },
             _org: { type: 'string' },
             objectId: { type: 'string' },
-            objectType: { type: 'string' },
+            objectType: { type: 'string', const: 'planservice' },
           },
           required: ['linkedService', 'planserviceCostShares', '_org', 'objectId', 'objectType'],
         },
@@ -51,7 +51,7 @@ const schema = {
       planType: { type: 'string' },
       creationDate: { type: 'string' },
     },
-    required: [ 'planCostShares', 'linkedPlanServices', '_org', 'objectId', 'objectType', 'planType', 'creationDate'],
+    required: [ 'planCostShares', '_org', 'objectId', 'objectType', 'planType', 'creationDate'],
   };
   
   export default schema;

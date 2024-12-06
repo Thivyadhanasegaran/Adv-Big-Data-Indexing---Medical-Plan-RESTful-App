@@ -1,25 +1,20 @@
 import express from 'express';
-import verifyToken from '../middlewares/authorizationMiddleware.js';
-import { createPlan, getPlan, deletePlan, getAllPlans, updatePlan ,putPlan } from '../controllers/planControllers.js';
+import { healthCheck } from '../middlewares/healthCheck.js';
+import verifyToken  from '../middlewares/authorizationMiddleware.js';
+import { 
+    createPlan, 
+    getAllPlans, 
+    getPlanById, 
+    patchPlan, 
+    deletePlan 
+} from '../controllers/planControllers.js';
 
 const router = express.Router();
 
-// Create a new plan
-router.post('/', verifyToken, createPlan);
-
-// Get a specific plan by ID
-router.get('/:id', verifyToken, getPlan);
-
-// Get all plans
-router.get('/',verifyToken, getAllPlans);
-
-// Update a specific plan by ID (PATCH)
-router.patch('/:id', verifyToken, updatePlan);
-
-// Update a entire plan by ID (PUT)
-router.put('/:id', verifyToken, putPlan);
-
-// Delete a specific plan by ID
-router.delete('/:id',verifyToken, deletePlan);
+router.post('/plan', healthCheck, verifyToken, createPlan);
+router.get('/plan', healthCheck, verifyToken, getAllPlans);
+router.get('/plan/:id', healthCheck, verifyToken, getPlanById);
+router.patch('/plan/:id', healthCheck, verifyToken, patchPlan);
+router.delete('/plan/:id', healthCheck, verifyToken, deletePlan);
 
 export default router;

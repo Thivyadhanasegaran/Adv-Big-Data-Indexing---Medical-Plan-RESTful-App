@@ -18,13 +18,13 @@ const verifyToken = async (req, res, next) => {
         // Verify the ID token using the built-in method from google-auth-library
         const ticket = await oauthClient.verifyIdToken({
             idToken: token,
-            audience: oauthClient._clientId, // Optional: specify the audience if required
+            audience: oauthClient._clientId, 
         });
 
-        const payload = ticket.getPayload(); // Get the decoded payload (user info)
+        const payload = ticket.getPayload(); 
         
         // Check if the token has expired by comparing `exp` with the current time
-        const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
+        const currentTime = Math.floor(Date.now() / 1000); 
         if (payload.exp && payload.exp < currentTime) {
             // If token is expired, return an error
             return res.status(401).json({ message: 'Token has expired. Please reauthenticate.' });
