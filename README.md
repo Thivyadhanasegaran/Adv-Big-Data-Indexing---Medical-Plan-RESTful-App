@@ -19,8 +19,7 @@ POST	/v1/plan - 	Creates a new entry in the store.
 GET	/v1/plan/:id -	Retrieves a specific entry by ID, with conditional read support.
 DELETE	/v1/plan/:id -	Deletes an entry by ID.
 PATCH /v1/plan/:id-  Updates specific fields of an existing entry by ID in the key-value store. The request body must contain a JSON object with only the fields to be updated. This method supports conditional updates using the If-Match header. If the ETag does not match the current entry's ETag, a 412 Precondition Failed status will be returned.
-P
- PATCH /v1/plan/:id  - Completely replaces an existing entry by ID in the key-value store. The request body must include a complete JSON object for the entry. This method also supports conditional updates using the If-Match header to prevent unintentional overwrites.
+PATCH /v1/plan/:id  - Completely replaces an existing entry by ID in the key-value store. The request body must include a complete JSON object for the entry. This method also supports conditional updates using the If-Match header to prevent unintentional overwrites.
 
 Status Code:
 200	Success (GET, DELETE, PUT,PATCH)
@@ -201,33 +200,33 @@ The generated access token will expire in 1 hour (3600 seconds). Token expiry is
 
 Demo 3:
 
-###Parent-Child Search with Elasticsearch and RabbitMQ
+## Parent-Child Search with Elasticsearch and RabbitMQ
 This project demonstrates a Parent-Child Search implementation using Elasticsearch and RabbitMQ. The solution includes indexing, patching, deleting, and posting documents with parent-child relationships. Queueing mechanisms are used to handle operations efficiently.
 
-#Features:
-Parent-Child Indexing:
+# Features:
+1. Parent-Child Indexing:
 Efficiently indexes documents with parent-child relationships using the plan_join field.
-Queue Handling:
+2. Queue Handling:
 Integrates with RabbitMQ for queuing operations (POST/DELETE).
-Document Operations:
+3. Document Operations:
 Supports posting and deleting documents in Elasticsearch.
-Dynamic Conversion:
+4. Dynamic Conversion:
 Processes nested JSON objects into appropriate document structures for indexing.
 
-#Technologies Used:
+# Technologies Used:
 Elasticsearch: Used for storing and querying parent-child relationships.
 RabbitMQ: Implements queueing for document operations.
 Node.js: Backend development.
 AMQP: Message queue protocol for RabbitMQ.
 
-#Setup Instructions:
+# Setup Instructions:
 Prerequisites
-Elasticsearch:
+1. Elasticsearch:
 Install and start Elasticsearch. Verify it is running on localhost:9200. (http://localhost:9200/)
-RabbitMQ:
+2. RabbitMQ:
 Install RabbitMQ and ensure it is running on localhost:15672 (http://localhost:15672/#/)
 
-#Configure RabbitMQ in config/local.json:
+# Configure RabbitMQ in config/local.json:
 
 {
     "RABBITMQ_QUEUE_NAME": "PUBSUB",
@@ -237,7 +236,7 @@ Install RabbitMQ and ensure it is running on localhost:15672 (http://localhost:1
     "ELASTICSEARCH_INDEX_NAME": "planindex"
 }
 
-#Usage
+# Usage
 Producer:
 Use the producer() method to send operations (POST/DELETE) to the queue.
 Consumer:
@@ -247,13 +246,13 @@ POST Document: Converts and indexes the document into Elasticsearch.
 DELETE Document: Deletes a document and its related keys from Elasticsearch
 
 
-#How to run the application:
-RabbitMQ should be running in terminal: brew install rabbitmq(if already installed, just run the start command) then brew services start rabbitmq   
-Kibana should be running in terminal: brew install elastic/tap/kibana-full(if already installed, just run the start command) then brew services start elastic/tap/kibana-full
-Redis should be running in terminal: brew services start redis
-Elastic search console link: http://localhost:5601/app/dev_tools#/console (to be opened in browser)
+# How to run the application:
+1. RabbitMQ should be running in terminal: brew install rabbitmq(if already installed, just run the start command) then brew services start rabbitmq   
+2. Kibana should be running in terminal: brew install elastic/tap/kibana-full(if already installed, just run the start command) then brew services start elastic/tap/kibana-full
+3. Redis should be running in terminal: brew services start redis
+4. Elastic search console link: http://localhost:5601/app/dev_tools#/console (to be opened in browser)
 RabbitMQ link: http://localhost:15672/#/ (to be opened in browser)
-Run the backend application: npm start
+5. Run the backend application: npm start
 
 ### Screenshot
 
