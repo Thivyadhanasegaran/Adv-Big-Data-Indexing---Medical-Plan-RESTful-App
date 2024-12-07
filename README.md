@@ -259,4 +259,4 @@ Run the backend application: npm start
 
 ![Screenshot of Feature](images/postman1.png)
 ![Screenshot of Feature](images/RabbitMQ.png)
-![Screenshot of Feature](images/Elastic search.png)
+![Screenshot of Feature](images/Elasticsearch.png)
