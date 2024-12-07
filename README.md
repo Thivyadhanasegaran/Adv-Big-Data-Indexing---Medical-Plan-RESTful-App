@@ -199,6 +199,64 @@ Upon successful request, you will receive a JSON response containing the access 
 Access Token Expiry:
 The generated access token will expire in 1 hour (3600 seconds). Token expiry is handled in the application by refreshing the token or generating a new one as needed.
 
+Demo 3:
+
+###Parent-Child Search with Elasticsearch and RabbitMQ
+This project demonstrates a Parent-Child Search implementation using Elasticsearch and RabbitMQ. The solution includes indexing, patching, deleting, and posting documents with parent-child relationships. Queueing mechanisms are used to handle operations efficiently.
+
+#Features:
+Parent-Child Indexing:
+Efficiently indexes documents with parent-child relationships using the plan_join field.
+Queue Handling:
+Integrates with RabbitMQ for queuing operations (POST/DELETE).
+Document Operations:
+Supports posting and deleting documents in Elasticsearch.
+Dynamic Conversion:
+Processes nested JSON objects into appropriate document structures for indexing.
+
+#Technologies Used:
+Elasticsearch: Used for storing and querying parent-child relationships.
+RabbitMQ: Implements queueing for document operations.
+Node.js: Backend development.
+AMQP: Message queue protocol for RabbitMQ.
+
+#Setup Instructions:
+Prerequisites
+Elasticsearch:
+Install and start Elasticsearch. Verify it is running on localhost:9200. (http://localhost:9200/)
+RabbitMQ:
+Install RabbitMQ and ensure it is running on localhost:15672 (http://localhost:15672/#/)
+
+#Configure RabbitMQ in config/local.json:
+
+{
+    "RABBITMQ_QUEUE_NAME": "PUBSUB",
+    "RABBITMQ_EXCHANGE_TYPE": "direct",
+    "RABBITMQ_EXCHANGE_NAME": "demo",
+    "RABBITMQ_KEY": "demo3",
+    "ELASTICSEARCH_INDEX_NAME": "planindex"
+}
+
+#Usage
+Producer:
+Use the producer() method to send operations (POST/DELETE) to the queue.
+Consumer:
+The consumer() method listens to the queue and processes operations.
+Endpoints:
+POST Document: Converts and indexes the document into Elasticsearch.
+DELETE Document: Deletes a document and its related keys from Elasticsearch
+
+
+#How to run the application:
+RabbitMQ should be running in terminal: brew install rabbitmq(if already installed, just run the start command) then brew services start rabbitmq   
+Kibana should be running in terminal: brew install elastic/tap/kibana-full(if already installed, just run the start command) then brew services start elastic/tap/kibana-full
+Redis should be running in terminal: brew services start redis
+Elastic search console link: http://localhost:5601/app/dev_tools#/console (to be opened in browser)
+RabbitMQ link: http://localhost:15672/#/ (to be opened in browser)
+Run the backend application: npm start
+
 ### Screenshot
 
 ![Screenshot of Feature](images/postman1.png)
+![Screenshot of Feature](images/RabbitMQ.png)
+![Screenshot of Feature](images/Elastic search.png)

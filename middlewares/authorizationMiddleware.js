@@ -36,7 +36,7 @@ const verifyToken = async (req, res, next) => {
         console.error("Token verification error:", err);
 
         // Specific error handling for expired token
-        if (err.message.includes('Token used too late')) {
+        if (err.message.includes('Token used too late') || err.message.includes('invalid_token')) {
             return res.status(401).json({ message: 'Token expired. Please log in again.' });
         }
 
